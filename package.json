@@ -1,7 +1,6 @@
 {
   "name": "iptv-epg",
   "version": "1.0.0",
-  "type": "module",
   "dependencies": {
     "xmldom": "^0.6.0"
   }
