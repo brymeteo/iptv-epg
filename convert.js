@@ -11,12 +11,6 @@ function fetchXML(url) {
   });
 }
 
-function parseDate(v) {
-  if (!v) return "";
-  const r = v.split(" ")[0];
-  return `${r.slice(0,4)}-${r.slice(4,6)}-${r.slice(6,8)}T${r.slice(8,10)}:${r.slice(10,12)}:${r.slice(12,14)}.000000Z`;
-}
-
 function getAttr(block, attr) {
   const m = block.match(new RegExp(`${attr}="([^"]+)"`));
   return m ? m[1] : "";
@@ -27,22 +21,32 @@ function getTag(block, tag) {
   return m ? m[1] : "";
 }
 
+function parseDate(v) {
+  if (!v) return "";
+  const r = v.split(" ")[0];
+  return `${r.slice(0, 4)}-${r.slice(4, 6)}-${r.slice(6, 8)}T${r.slice(8, 10)}:${r.slice(10, 12)}:${r.slice(12, 14)}.000000Z`;
+}
+
 (async () => {
   try {
-    console.log("Downloading XML...");
+    console.log("📥 Download XML...");
 
-    const xml = await fetchXML("https://raw.githubusercontent.com/matthuisman/i.mjh.nz/refs/heads/master/SamsungTVPlus/it.xml");
+    const xml = await fetchXML(
+      "https://raw.githubusercontent.com/matthuisman/i.mjh.nz/refs/heads/master/SamsungTVPlus/it.xml"
+    );
 
-    console.log("XML size:", xml.length);
+    console.log("✅ XML size:", xml.length);
 
+    // -------------------------
     // CHANNELS
+    // -------------------------
     const channelBlocks = xml.match(/<channel[^>]*>[\s\S]*?<\/channel>/g) || [];
-
     const channels = {};
 
     for (const ch of channelBlocks) {
       const id = getAttr(ch, "id");
-      const name = ch.match(/<display-name[^>]*>(.*?)<\/display-name>/)?.[1] || "";
+      const name =
+        ch.match(/<display-name[^>]*>(.*?)<\/display-name>/)?.[1] || "";
 
       if (!id) continue;
 
@@ -56,7 +60,11 @@ function getTag(block, tag) {
       };
     }
 
+    console.log(`📺 Channels parsed: ${Object.keys(channels).length}`);
+
+    // -------------------------
     // PROGRAMMES
+    // -------------------------
     const progBlocks = xml.match(/<programme[^>]*>[\s\S]*?<\/programme>/g) || [];
 
     for (const p of progBlocks) {
@@ -74,50 +82,19 @@ function getTag(block, tag) {
       });
     }
 
-    fs.writeFileSync("output.json", JSON.stringify(Object.values(channels), null, 2));
+    console.log(`📡 Programmes parsed: ${progBlocks.length}`);
 
-    console.log("OK - JSON generated");
+    // -------------------------
+    // OUTPUT
+    // -------------------------
+    fs.writeFileSync(
+      "output.json",
+      JSON.stringify(Object.values(channels), null, 2)
+    );
 
+    console.log("🎉 OK - JSON generated");
   } catch (err) {
-    console.error("FATAL ERROR:", err);
+    console.error("❌ FATAL ERROR:", err);
     process.exit(1);
   }
-})();    const channels = {};
-    const channelNodes = xml.getElementsByTagName("channel");
-
-    for (let ch of channelNodes) {
-        const id = ch.getAttribute("id");
-        const name = getText(ch, "display-name");
-
-        channels[id] = {
-            id,
-            name,
-            epgName: name,
-            logo: getAttr(ch, "icon", "src") || "",
-            m3uLink: "",
-            programs: []
-        };
-    }
-
-    const programmes = xml.getElementsByTagName("programme");
-
-    for (let p of programmes) {
-        const cid = p.getAttribute("channel");
-        if (!channels[cid]) continue;
-
-        channels[cid].programs.push({
-            start: parseDate(p.getAttribute("start")),
-            end: parseDate(p.getAttribute("stop")),
-            title: getText(p, "title"),
-            description: getText(p, "desc") || "",
-            category: "Categoria non disponibile",
-            poster: getAttr(p, "icon", "src") || "",
-            channel: channels[cid].name.toLowerCase().replace(/\s+/g,"-")
-        });
-    }
-
-    fs.writeFileSync("output.json", JSON.stringify(Object.values(channels), null, 2));
-    console.log("OK - JSON aggiornato");
-}
-
-run();
+})();
