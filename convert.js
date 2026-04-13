@@ -38,7 +38,7 @@ function parseDate(v) {
   );
 
   // 👉 QUI aggiungi +1 ora
-  date.setHours(date.getHours() + 1);
+  date.setHours(date.getHours() + 2);
 
   return date.toISOString().replace("Z", ".000000Z");
 }
