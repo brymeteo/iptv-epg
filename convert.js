@@ -26,21 +26,7 @@ function parseDate(v) {
 
   const r = v.split(" ")[0];
 
-  const date = new Date(
-    Date.UTC(
-      r.slice(0, 4),
-      r.slice(4, 6) - 1,
-      r.slice(6, 8),
-      r.slice(8, 10),
-      r.slice(10, 12),
-      r.slice(12, 14)
-    )
-  );
-
-  // 👉 QUI aggiungi +1 ora
-  date.setHours(date.getHours() + 2);
-
-  return date.toISOString().replace("Z", ".000000Z");
+  return `${r.slice(0, 4)}-${r.slice(4, 6)}-${r.slice(6, 8)}T${r.slice(8, 10)}:${r.slice(10, 12)}:${r.slice(12, 14)}.000000Z`;
 }
 
 (async () => {
