@@ -1,5 +1,16 @@
 const fs = require("fs");
+const https = require("https");
 const { DOMParser } = require("xmldom");
+
+function fetchXML(url) {
+    return new Promise((resolve, reject) => {
+        https.get(url, res => {
+            let data = "";
+            res.on("data", chunk => data += chunk);
+            res.on("end", () => resolve(data));
+        }).on("error", reject);
+    });
+}
 
 function parseDate(v) {
     const r = v.split(" ")[0];
@@ -17,16 +28,15 @@ function getAttr(el, tag, attr) {
 }
 
 async function run() {
-    const res = await fetch("https://raw.githubusercontent.com/matthuisman/i.mjh.nz/refs/heads/master/SamsungTVPlus/it.xml");
-    const xmlText = await res.text();
+    const url = "https://raw.githubusercontent.com/matthuisman/i.mjh.nz/refs/heads/master/SamsungTVPlus/it.xml";
 
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(xmlText, "text/xml");
+    const xmlText = await fetchXML(url);
+
+    const xml = new DOMParser().parseFromString(xmlText, "text/xml");
 
     const channels = {};
     const channelNodes = xml.getElementsByTagName("channel");
 
-    // CHANNELS
     for (let ch of channelNodes) {
         const id = ch.getAttribute("id");
         const name = getText(ch, "display-name");
@@ -41,7 +51,6 @@ async function run() {
         };
     }
 
-    // PROGRAMMES
     const programmes = xml.getElementsByTagName("programme");
 
     for (let p of programmes) {
@@ -60,7 +69,7 @@ async function run() {
     }
 
     fs.writeFileSync("output.json", JSON.stringify(Object.values(channels), null, 2));
-    console.log("JSON generato");
+    console.log("OK - JSON aggiornato");
 }
 
 run();
